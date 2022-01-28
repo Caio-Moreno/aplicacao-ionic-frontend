@@ -1,9 +1,16 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HTTP_INTERCEPTORS } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { AlertController } from "ionic-angular";
 import { Observable } from "rxjs/Rx";
+import { StorageService } from "../services/storage.service";
 
 @Injectable()
 export class ErrorInteceptor implements HttpInterceptor{
+
+    constructor(public storage: StorageService, public alertCtrl: AlertController){
+
+    }
+
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         
@@ -22,9 +29,53 @@ export class ErrorInteceptor implements HttpInterceptor{
             console.log('Erro detectado pelo interceptor');
             console.log(errorObj)
 
+            switch(errorObj.status){
+                case 401: 
+                this.handler401();
+
+                case 403: 
+                this.handler403();
+                break;
+
+                default: 
+                this.handlerDefaultError(errorObj);
+                break;
+            }
+
             return Observable.throw(errorObj);
         }) as any
     
+    }
+
+    handler403(){
+        this.storage.setLocalUser(null);
+    }
+
+    handler401(){
+       let alert = this.alertCtrl.create({
+           title: 'Erro 401: Falha na autenticação',
+           message: 'Email ou senha incorretos',
+           enableBackdropDismiss: false,
+           buttons: [
+               { text: 'Ok'}
+           ]
+       });
+       alert.present();
+    }
+
+    handlerDefaultError(errorObj){
+        console.log('Entrei no erro default')
+
+        let alert = this.alertCtrl.create({
+            title: 'Erro ' + errorObj.status + ': '+ errorObj.error,
+            message: errorObj.message,
+            enableBackdropDismiss: false,
+            buttons: [
+                { text: 'Ok'}
+            ]
+        });
+        alert.present();
+           
     }
 }
 
