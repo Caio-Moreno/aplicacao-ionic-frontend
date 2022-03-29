@@ -55,7 +55,7 @@ export class ProfilePage {
   getImageIfExists(){
     this.clienteService.getImageFromBucket(this.cliente.id)
     .subscribe(response => {
-      this.cliente.imageUrl = `${API_CONFIG.bucketBaseUrl}/cp${this.cliente.id}.png`
+      this.cliente.imageUrl = `${API_CONFIG.bucketBaseUrl}/cp${this.cliente.id}.jpg`
       , error => {}})
   }
 
@@ -74,7 +74,7 @@ export class ProfilePage {
      this.picture = 'data:image/png;base64,' + imageData;
      this.cameraon = false;
     }, (err) => {
-     // Handle error
+      this.cameraon = false;
     });
   }
 
@@ -83,6 +83,7 @@ export class ProfilePage {
       .subscribe(response => {
         this.picture = null;
         this.loadData();
+        this.getImageIfExists()
       }, error => {});
   }
 
